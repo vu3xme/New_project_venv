@@ -1,3 +1,23 @@
 # https://oss.oetiker.ch/rrdtool/index.en.html
 # http://www.esp8266-projects.com/2015/05/raspberry-pi-standalone-thingspeak.html/
 # https://www.youtube.com/watch?v=hke5b3RPIUc&ab_channel=MCUProjectsWorld
+# https://learn.linksprite.com/project/how-to-install-thinkspeak-server-standalone-2/
+# https://www.teracomsystems.com/blog/how-to-install-local-thingspeak-server/
+-------------------
+MySQL Database configuration
+
+--------------
+sudo apt-get -y install build-essential git mysql-server mysql-client libmysqlclient-dev libxml2-dev libxslt-dev libssl-dev libsqlite3-dev
+--
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'meghnad';
+CREATE USER 'root'@'%' IDENTIFIED BY 'meghnad';
+--
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+ GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
+--
+CREATE USER 'thing'@'localhost' IDENTIFIED BY 'speak’;
+
+--
+GRANT ALL PRIVILEGES ON *.* TO 'thing'@'localhost' WITH GRANT OPTION;
+----------------------------------
+
