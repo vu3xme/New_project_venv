@@ -1,0 +1,56 @@
+# Steps to install ThingSpeak server on Raspbian Jessie, based on info taken from, in no particular order:
+# https://gist.github.com/blacktm/8302741
+# https://gist.github.com/sourceperl/b84ab0d723bda21321fc/
+# https://github.com/iobridge/thingspeak
+# http://www.esp8266-projects.com/2015/11/raspberry-pi2-thingspeak-on-jessie.html
+# http://www.esp8266-projects.com/2015/05/raspberry-pi-standalone-thingspeak.html
+# http://www.cnx-software.com/2016/12/07/how-to-install-thingspeak-in-ubuntu-16-04/
+
+# install requirements
+sudo apt-get -y update
+sudo apt-get -y upgrade
+sudo apt-get -y install build-essential git mysql-server mysql-client libmysqlclient-dev libxml2-dev libxslt-dev libssl-dev libsqlite3-dev autoconf bison libyaml-dev libreadline6-dev zlib1g-dev libncurses5-dev libffi-dev libgdbm3 libgdbm-dev
+
+# if you missed the root password creation on previous step, use this to give mysql root user a password
+# sudo dpkg-reconfigure mysql-server-5.5
+
+# insert password from previous step at the mysql prompt when asked:
+mysql -uroot mysql -p <<EOF
+CREATE DATABASE `thingspeak_test` DEFAULT CHARACTER SET `utf8` COLLATE `utf8_unicode_ci`;
+GRANT ALL PRIVILEGES ON `thingspeak_test`.* TO 'thing'@'localhost';
+FLUSH PRIVILEGES;
+COMMIT;
+EXIT;
+EOF
+
+# download, compile and install ruby from sources (it's not latest available version, but couldn't get latest to work)
+cd
+wget http://cache.ruby-lang.org/pub/ruby/2.1/ruby-2.1.9.tar.gz
+tar xvzf ruby-2.1.9.tar.gz
+cd ruby-2.1.9/
+./configure
+make
+sudo make install
+
+# install rails
+cd ..
+echo "gem: --no-rdoc --no-ri" >> ${HOME}/.gemrc
+sudo gem install activesupport --no-rdoc --no-ri -v 4.2.6
+sudo gem install rails --no-rdoc --no-ri -v 4.2.6
+sudo gem install bundle --no-rdoc --no-ri
+
+# install ThingSpeak
+git clone https://github.com/iobridge/thingspeak.git
+cp thingspeak/config/database.yml.example thingspeak/config/database.yml
+cd thingspeak/
+bundle install
+bundle exec rake db:create
+bundle exec rake db:schema:load
+
+# start ThingSpeak Server
+rails server webrick
+
+# open browser on http://raspberry-ip:3000 and follow instruction on final part of: http://www.esp8266-projects.com/2015/05/raspberry-pi-standalone-thingspeak.html
+# I had problems with the incomplete italian translation, after stopping the rails server I get rid of it with:
+# mv $HOME/thingspeak/config/locales/it.yml $HOME/thingspeak/config/locales/it.yml.bak
+# update: no, latest problems still exists... lot of wrong html in pages, to get rid of the errors I had to set browser default language to ENGLISH (EN)
